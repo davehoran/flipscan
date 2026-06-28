@@ -132,22 +132,33 @@ function summarize(prices: number[]): PriceStats {
   };
 }
 
-export async function getEbayPricing(searchTerm: string): Promise<EbayPricing> {
-  const token = await getEbayAccessToken();
-
-  const url = new URL(
-    `${ebayBaseUrl()}/buy/browse/v1/item_summary/search`,
-  );
+async function browseSearch(searchTerm: string): Promise<Response> {
+  const url = new URL(`${ebayBaseUrl()}/buy/browse/v1/item_summary/search`);
   url.searchParams.set("q", searchTerm);
   url.searchParams.set("limit", "100");
 
-  const resp = await fetch(url.toString(), {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "X-EBAY-C-MARKETPLACE-ID": EBAY_MARKETPLACE,
-      "Content-Type": "application/json",
-    },
-  });
+  const doFetch = (token: string) =>
+    fetch(url.toString(), {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "X-EBAY-C-MARKETPLACE-ID": EBAY_MARKETPLACE,
+        "Content-Type": "application/json",
+      },
+    });
+
+  let resp = await doFetch(await getEbayAccessToken());
+
+  // A cached token can be revoked/expired server-side; refresh once and retry.
+  if (resp.status === 401 || resp.status === 403) {
+    cachedToken = null;
+    resp = await doFetch(await getEbayAccessToken());
+  }
+
+  return resp;
+}
+
+export async function getEbayPricing(searchTerm: string): Promise<EbayPricing> {
+  const resp = await browseSearch(searchTerm);
 
   if (!resp.ok) {
     throw new Error(`eBay Browse API error: ${resp.status}`);

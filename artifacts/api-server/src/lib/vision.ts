@@ -7,6 +7,18 @@ export type Identification = {
   searchTerm: string;
 };
 
+/**
+ * Thrown when the photo genuinely can't be identified as a sellable item
+ * (model returned no usable product). Distinct from OpenAI/network failures so
+ * callers can map this to a 422 (bad input) rather than a 5xx (server outage).
+ */
+export class UnidentifiableItemError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "UnidentifiableItemError";
+  }
+}
+
 const SYSTEM_PROMPT = `You are an expert eBay reseller assistant. You are shown a single photo of a physical item that a reseller is considering flipping. Identify the item as specifically as possible (brand, model, variant) the way it would be titled in an eBay listing.
 
 Respond with ONLY a JSON object (no markdown, no prose) with exactly these keys:
@@ -45,7 +57,7 @@ export async function identifyItem(imageDataUrl: string): Promise<Identification
   try {
     parsed = JSON.parse(raw);
   } catch {
-    throw new Error("Vision model returned unparseable output");
+    throw new UnidentifiableItemError("Vision model returned unparseable output");
   }
 
   const name = typeof parsed.name === "string" ? parsed.name.trim() : "";
@@ -62,7 +74,7 @@ export async function identifyItem(imageDataUrl: string): Promise<Identification
   confidence = Math.max(0, Math.min(100, confidence));
 
   if (!name) {
-    throw new Error("Could not identify an item in the photo");
+    throw new UnidentifiableItemError("Could not identify an item in the photo");
   }
 
   return { name, category, confidence, searchTerm };

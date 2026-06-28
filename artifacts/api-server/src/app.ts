@@ -35,7 +35,34 @@ app.use(
 
 app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
 
-app.use(cors({ credentials: true, origin: true }));
+// The browser reaches this API through the Vite dev/prod proxy (same origin),
+// so cross-origin credentialed requests should be limited to an explicit
+// allowlist rather than reflecting any origin. CORS_ALLOWED_ORIGINS is a
+// comma-separated list; the Replit dev domain is always permitted.
+const allowedOrigins = new Set(
+  [
+    ...(process.env.CORS_ALLOWED_ORIGINS?.split(",") ?? []),
+    process.env.REPLIT_DEV_DOMAIN
+      ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+      : undefined,
+  ]
+    .map((o) => o?.trim())
+    .filter((o): o is string => Boolean(o)),
+);
+
+app.use(
+  cors({
+    credentials: true,
+    origin(origin, callback) {
+      // Same-origin / non-browser requests have no Origin header.
+      if (!origin || allowedOrigins.has(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(null, false);
+    },
+  }),
+);
 app.use(express.json({ limit: "15mb" }));
 app.use(express.urlencoded({ extended: true, limit: "15mb" }));
 

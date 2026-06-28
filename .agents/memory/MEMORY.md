@@ -1,0 +1,2 @@
+- [Save-flow test timing](save-flow-test-timing.md) — verify mutation flows by asserting persistence, not button disabled-state; isPending=false at idle is a timing trap.
+- [Shared proxy & curl](shared-proxy-curl.md) — reach /api via localhost:80 (relative URLs, no Vite proxy); curl to $REPLIT_DEV_DOMAIN returns 000 (mTLS).
