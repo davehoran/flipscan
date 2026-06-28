@@ -10,6 +10,10 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: scan
+    description: Item scanning and pricing intelligence
+  - name: saved
+    description: Saved item history
 paths:
   /healthz:
     get:
@@ -24,6 +28,132 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /scan:
+    post:
+      operationId: analyzeItem
+      tags: [scan]
+      summary: Identify an item from a photo and return eBay pricing intelligence
+      description: >
+        Accepts a base64 data-URL image, identifies the item via AI vision, then
+        returns live eBay active-listing pricing, sold comparable data, sell-through
+        rate, and flip analysis.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScanInput"
+      responses:
+        "200":
+          description: Pricing intelligence for the identified item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScanResult"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "422":
+          description: Item could not be identified
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /saved-items:
+    get:
+      operationId: listSavedItems
+      tags: [saved]
+      summary: List the signed-in user's saved scans
+      responses:
+        "200":
+          description: Saved items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SavedItem"
+    post:
+      operationId: createSavedItem
+      tags: [saved]
+      summary: Save a scan result to the user's history
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SavedItemInput"
+      responses:
+        "201":
+          description: Saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SavedItem"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /saved-items/{id}:
+    get:
+      operationId: getSavedItem
+      tags: [saved]
+      summary: Get a single saved item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Saved item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SavedItem"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      operationId: deleteSavedItem
+      tags: [saved]
+      summary: Delete a saved item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /stats:
+    get:
+      operationId: getStats
+      tags: [saved]
+      summary: Summary stats across the user's saved items
+      responses:
+        "200":
+          description: Saved-item summary statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Stats"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +163,163 @@ components:
           type: string
       required:
         - status
-
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+    PriceStats:
+      type: object
+      description: Aggregated price figures for a set of listings
+      required: [avg, low, high, count]
+      properties:
+        avg:
+          type: number
+        low:
+          type: number
+        high:
+          type: number
+        count:
+          type: integer
+    SoldStats:
+      type: object
+      description: Aggregated price figures for sold comps over the last 90 days
+      required: [avg, low, high, count, isEstimated]
+      properties:
+        avg:
+          type: number
+        low:
+          type: number
+        high:
+          type: number
+        count:
+          type: integer
+        isEstimated:
+          type: boolean
+          description: True when sold figures are estimated from active data rather than real sold comps
+    SellThrough:
+      type: object
+      required: [rate, label]
+      properties:
+        rate:
+          type: integer
+          description: Sell-through rate as a percentage (0-100)
+        label:
+          type: string
+          enum: [Hot, Moderate, Slow]
+    FlipAnalysis:
+      type: object
+      required: [buyBelow, listLow, listHigh, estProfit]
+      properties:
+        buyBelow:
+          type: number
+          description: Maximum suggested buy price to make the flip worthwhile
+        listLow:
+          type: number
+        listHigh:
+          type: number
+        estProfit:
+          type: number
+          description: Estimated profit at the midpoint list price
+    ScanInput:
+      type: object
+      required: [image]
+      properties:
+        image:
+          type: string
+          description: Base64 data-URL of the captured photo (e.g. "data:image/jpeg;base64,...")
+    ScanResult:
+      type: object
+      required: [name, category, confidence, searchTerm, active, sold, sellThrough, flip, ebayUrl]
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+        confidence:
+          type: integer
+          description: AI identification confidence as a percentage (0-100)
+        searchTerm:
+          type: string
+          description: The query used to search eBay
+        active:
+          $ref: "#/components/schemas/PriceStats"
+        sold:
+          $ref: "#/components/schemas/SoldStats"
+        sellThrough:
+          $ref: "#/components/schemas/SellThrough"
+        flip:
+          $ref: "#/components/schemas/FlipAnalysis"
+        ebayUrl:
+          type: string
+          description: Link to the eBay search for this item
+    SavedItem:
+      type: object
+      required: [id, name, category, confidence, searchTerm, active, sold, sellThrough, flip, ebayUrl, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          type: string
+        confidence:
+          type: integer
+        searchTerm:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+          description: Optional thumbnail/captured image data-URL
+        active:
+          $ref: "#/components/schemas/PriceStats"
+        sold:
+          $ref: "#/components/schemas/SoldStats"
+        sellThrough:
+          $ref: "#/components/schemas/SellThrough"
+        flip:
+          $ref: "#/components/schemas/FlipAnalysis"
+        ebayUrl:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    SavedItemInput:
+      type: object
+      required: [name, category, confidence, searchTerm, active, sold, sellThrough, flip, ebayUrl]
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+        confidence:
+          type: integer
+        searchTerm:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        active:
+          $ref: "#/components/schemas/PriceStats"
+        sold:
+          $ref: "#/components/schemas/SoldStats"
+        sellThrough:
+          $ref: "#/components/schemas/SellThrough"
+        flip:
+          $ref: "#/components/schemas/FlipAnalysis"
+        ebayUrl:
+          type: string
+    Stats:
+      type: object
+      required: [totalSaved, totalEstProfit, hotCount, avgSellThrough]
+      properties:
+        totalSaved:
+          type: integer
+        totalEstProfit:
+          type: number
+        hotCount:
+          type: integer
+          description: Number of saved items with a Hot sell-through rating
+        avgSellThrough:
+          type: integer
+          description: Average sell-through rate across saved items (0-100)
