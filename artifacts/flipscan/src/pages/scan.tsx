@@ -291,7 +291,8 @@ export default function ScanFlow() {
             </Link>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-[14px] flex flex-col gap-[10px] pb-10">
+          <div className="flex-1 overflow-y-auto">
+          <div className="p-[14px] flex flex-col gap-[10px] pb-[120px]">
             
             {/* Item Card */}
             <div className="bg-white rounded-[16px] p-[14px] flex gap-[12px] items-start shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
@@ -416,6 +417,7 @@ export default function ScanFlow() {
               </a>
             </div>
 
+          </div>
           </div>
         </div>
       )}
