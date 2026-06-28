@@ -26,5 +26,5 @@ channel = "stable-25_05"
 [userenv]
 
 [userenv.shared]
-EBAY_ENV = "sandbox"
+EBAY_ENV = "production"
 EBAY_NOTIFICATION_ENDPOINT_URL = "https://flip-scan.replit.app/api/ebay/account-deletion"
