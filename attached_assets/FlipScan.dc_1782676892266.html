@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    @keyframes scanLine {
+      0%   { top: 12%; opacity: 0.9; }
+      100% { top: 84%; opacity: 0.5; }
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes breathe {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.45; transform: scale(0.88); }
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0);    }
+    }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0);   }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0d0d1a; -webkit-tap-highlight-color: transparent; }
+    button { -webkit-tap-highlight-color: transparent; cursor: pointer; }
+  </style>
+</helmet>
+
+<!-- Page wrapper -->
+<div style="min-height:100vh;background:radial-gradient(ellipse at 30% 0%,#1a1040 0%,#0d0d1a 55%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px;font-family:'Inter',system-ui,sans-serif;gap:20px">
+
+  <!-- Hidden file inputs -->
+  <input type="file" id="fs-cam" accept="image/*" capture="environment" style="display:none;position:absolute;left:-9999px" onChange="{{ handleCameraCapture }}">
+  <input type="file" id="fs-gallery" accept="image/*" style="display:none;position:absolute;left:-9999px" onChange="{{ handleGalleryCapture }}">
+
+  <!-- iOS Device -->
+  <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ isDark }}" hint-size="402px,874px">
+
+    <!-- ╔══════════════════════════════════╗
+         ║         CAMERA SCREEN           ║
+         ╚══════════════════════════════════╝ -->
+    <sc-if value="{{ isCameraScreen }}" hint-placeholder-val="{{ true }}">
+      <div style="height:100%;background:#000;display:flex;flex-direction:column;overflow:hidden;position:relative">
+
+        <!-- Top bar -->
+        <div style="padding:56px 20px 10px;display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font:900 24px/1 'Inter';color:#fff;letter-spacing:-1px">FlipScan</div>
+            <div style="font:400 11px/1 'Inter';color:rgba(255,255,255,0.35);margin-top:4px;letter-spacing:0.3px">eBay Price Intelligence</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;background:rgba(52,199,89,0.12);border:1px solid rgba(52,199,89,0.25);border-radius:20px;padding:5px 11px">
+            <div style="width:7px;height:7px;border-radius:50%;background:#34C759;animation:breathe 1.8s ease-in-out infinite"></div>
+            <span style="font:500 11px 'Inter';color:#34C759">Live Data</span>
+          </div>
+        </div>
+
+        <!-- Viewfinder -->
+        <div style="flex:1;margin:8px 20px;position:relative">
+          <div style="position:absolute;inset:0;border-radius:18px;overflow:hidden;background:#080810">
+            <!-- Grid overlay -->
+            <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(0,122,255,0.035) 1px,transparent 1px),linear-gradient(90deg,rgba(0,122,255,0.035) 1px,transparent 1px);background-size:30px 30px"></div>
+            <!-- Scan line -->
+            <div style="position:absolute;left:20px;right:20px;height:1.5px;background:linear-gradient(90deg,transparent,rgba(0,122,255,0.7) 20%,rgba(120,200,255,1) 50%,rgba(0,122,255,0.7) 80%,transparent);animation:scanLine 2.4s ease-in-out infinite alternate;filter:drop-shadow(0 0 6px rgba(0,150,255,0.9))">
+              <div style="position:absolute;left:0;right:0;top:-40px;height:80px;background:linear-gradient(180deg,transparent,rgba(0,122,255,0.05),transparent)"></div>
+            </div>
+            <!-- Center icon + hint -->
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px">
+              <div style="opacity:0.22">
+                <svg width="56" height="48" viewBox="0 0 56 48" fill="none">
+                  <path d="M20 6H11a6 6 0 00-6 6v24a6 6 0 006 6h34a6 6 0 006-6V12a6 6 0 00-6-6h-9l-3-6H23l-3 6z" stroke="white" stroke-width="2.2" stroke-linejoin="round"/>
+                  <circle cx="28" cy="24" r="9" stroke="white" stroke-width="2"/>
+                  <circle cx="28" cy="24" r="3.5" stroke="white" stroke-width="1.5" stroke-dasharray="2 3"/>
+                  <circle cx="42" cy="15" r="2.5" fill="white" opacity="0.6"/>
+                </svg>
+              </div>
+              <div style="font:400 12px 'Inter';color:rgba(255,255,255,0.25);letter-spacing:0.5px;text-align:center">Point at any item</div>
+            </div>
+          </div>
+          <!-- Corner brackets -->
+          <div style="position:absolute;top:0;left:0;width:30px;height:30px;border-top:2.5px solid rgba(0,150,255,0.85);border-left:2.5px solid rgba(0,150,255,0.85);border-radius:4px 0 0 0;z-index:2"></div>
+          <div style="position:absolute;top:0;right:0;width:30px;height:30px;border-top:2.5px solid rgba(0,150,255,0.85);border-right:2.5px solid rgba(0,150,255,0.85);border-radius:0 4px 0 0;z-index:2"></div>
+          <div style="position:absolute;bottom:0;left:0;width:30px;height:30px;border-bottom:2.5px solid rgba(0,150,255,0.85);border-left:2.5px solid rgba(0,150,255,0.85);border-radius:0 0 0 4px;z-index:2"></div>
+          <div style="position:absolute;bottom:0;right:0;width:30px;height:30px;border-bottom:2.5px solid rgba(0,150,255,0.85);border-right:2.5px solid rgba(0,150,255,0.85);border-radius:0 0 4px 0;z-index:2"></div>
+        </div>
+
+        <!-- Hint -->
+        <div style="text-align:center;padding:10px 20px 6px;font:400 12px 'Inter';color:rgba(255,255,255,0.3)">
+          Snap a photo or tap Demo to explore
+        </div>
+
+        <!-- Controls -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 44px 30px">
+
+          <!-- Gallery -->
+          <button onClick="{{ openGallery }}" style="width:54px;height:54px;border-radius:16px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.12);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px" style-active="background:rgba(255,255,255,0.18)">
+            <svg width="22" height="19" viewBox="0 0 22 19" fill="none">
+              <rect x="1" y="2" width="20" height="16" rx="3" stroke="rgba(255,255,255,0.75)" stroke-width="1.7"/>
+              <circle cx="7.5" cy="8" r="2.5" stroke="rgba(255,255,255,0.75)" stroke-width="1.5"/>
+              <path d="M1 13.5l5.5-5 3.5 3.5 3-3 5 5.5" stroke="rgba(255,255,255,0.75)" stroke-width="1.5" stroke-linejoin="round"/>
+            </svg>
+            <span style="font:600 8px 'Inter';color:rgba(255,255,255,0.4);letter-spacing:0.5px">GALLERY</span>
+          </button>
+
+          <!-- Shutter -->
+          <button onClick="{{ openCamera }}" style="width:82px;height:82px;border-radius:50%;background:transparent;border:3px solid rgba(255,255,255,0.7);display:flex;align-items:center;justify-content:center" style-active="transform:scale(0.94)">
+            <div style="width:68px;height:68px;border-radius:50%;background:#fff;transition:transform 0.1s"></div>
+          </button>
+
+          <!-- Demo -->
+          <button onClick="{{ startDemo }}" style="width:54px;height:54px;border-radius:16px;background:rgba(0,122,255,0.14);border:1.5px solid rgba(0,122,255,0.38);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px" style-active="background:rgba(0,122,255,0.28)">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <polygon points="6,3.5 15,9 6,14.5" fill="rgba(100,170,255,0.9)"/>
+            </svg>
+            <span style="font:600 8px 'Inter';color:rgba(100,170,255,0.75);letter-spacing:0.5px">DEMO</span>
+          </button>
+
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ╔══════════════════════════════════╗
+         ║       ANALYZING SCREEN          ║
+         ╚══════════════════════════════════╝ -->
+    <sc-if value="{{ isAnalyzingScreen }}" hint-placeholder-val="{{ false }}">
+      <div style="height:100%;background:#000;display:flex;flex-direction:column;overflow:hidden">
+
+        <!-- Photo / placeholder area -->
+        <div style="flex:1;position:relative;min-height:0;overflow:hidden;background:{{ itemBg }}">
+
+          <!-- Captured photo rendered as background-image (avoids broken img src during streaming) -->
+          <div style="position:absolute;inset:0;background-image:{{ capturedBgStyle }};background-size:cover;background-position:center"></div>
+
+          <!-- Demo placeholder overlay (emoji + name when no real photo) -->
+          <sc-if value="{{ showPlaceholder }}" hint-placeholder-val="{{ true }}">
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px">
+              <div style="font-size:80px;line-height:1;animation:breathe 2.2s ease-in-out infinite">{{ itemEmoji }}</div>
+              <div style="font:600 14px 'Inter';color:rgba(255,255,255,0.4);text-align:center;padding:0 40px;letter-spacing:0.2px">{{ itemName }}</div>
+            </div>
+          </sc-if>
+
+          <!-- Gradient overlay -->
+          <div style="position:absolute;bottom:0;left:0;right:0;height:55%;background:linear-gradient(transparent,rgba(0,0,0,0.92));pointer-events:none"></div>
+
+          <!-- Identified label -->
+          <div style="position:absolute;bottom:18px;left:20px;right:20px">
+            <div style="font:500 10px 'Inter';color:rgba(255,255,255,0.45);letter-spacing:0.8px;margin-bottom:5px">IDENTIFIED</div>
+            <div style="font:700 17px 'Inter';color:#fff;line-height:1.25;margin-bottom:3px">{{ itemName }}</div>
+            <div style="font:400 13px 'Inter';color:rgba(255,255,255,0.5)">{{ itemCategory }}</div>
+          </div>
+        </div>
+
+        <!-- Analysis card -->
+        <div style="background:#fff;border-radius:24px 24px 0 0;padding:22px 22px 36px;flex-shrink:0;animation:slideUp 0.35s ease">
+
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px">
+            <div>
+              <div style="font:700 17px 'Inter';color:#1C1C1E;margin-bottom:3px">Analyzing image</div>
+              <div style="font:400 13px 'Inter';color:#8E8E93">Searching eBay marketplace data</div>
+            </div>
+            <div style="width:9px;height:9px;border-radius:50%;background:#007AFF;margin-top:4px;animation:breathe 1s ease-in-out infinite"></div>
+          </div>
+
+          <!-- Step 1 -->
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
+            <div style="width:32px;height:32px;border-radius:50%;background:{{ step0Bg }};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.4s ease">
+              <sc-if value="{{ step0Check }}" hint-placeholder-val="{{ false }}">
+                <svg width="13" height="10" viewBox="0 0 13 10" fill="none"><path d="M1 5L5 9 12 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </sc-if>
+              <sc-if value="{{ step0Spin }}" hint-placeholder-val="{{ true }}">
+                <div style="width:14px;height:14px;border-radius:50%;border:2.5px solid rgba(255,255,255,0.28);border-top-color:#fff;animation:spin 0.7s linear infinite"></div>
+              </sc-if>
+            </div>
+            <div style="flex:1">
+              <div style="font:500 14px 'Inter';color:#1C1C1E">Visual Search</div>
+              <div style="font:400 12px 'Inter';color:#8E8E93">Matching image to eBay catalog</div>
+            </div>
+            <sc-if value="{{ step0Check }}" hint-placeholder-val="{{ false }}">
+              <span style="font:600 12px 'Inter';color:#34C759">✓ Done</span>
+            </sc-if>
+          </div>
+
+          <!-- Step 2 -->
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
+            <div style="width:32px;height:32px;border-radius:50%;background:{{ step1Bg }};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.4s ease">
+              <sc-if value="{{ step1Check }}" hint-placeholder-val="{{ false }}">
+                <svg width="13" height="10" viewBox="0 0 13 10" fill="none"><path d="M1 5L5 9 12 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </sc-if>
+              <sc-if value="{{ step1Spin }}" hint-placeholder-val="{{ false }}">
+                <div style="width:14px;height:14px;border-radius:50%;border:2.5px solid rgba(255,255,255,0.28);border-top-color:#fff;animation:spin 0.7s linear infinite"></div>
+              </sc-if>
+            </div>
+            <div style="flex:1">
+              <div style="font:500 14px 'Inter';color:#1C1C1E">Active Listings</div>
+              <div style="font:400 12px 'Inter';color:#8E8E93">Scanning current eBay prices</div>
+            </div>
+            <sc-if value="{{ step1Check }}" hint-placeholder-val="{{ false }}">
+              <span style="font:600 12px 'Inter';color:#34C759">✓ Done</span>
+            </sc-if>
+          </div>
+
+          <!-- Step 3 -->
+          <div style="display:flex;align-items:center;gap:14px">
+            <div style="width:32px;height:32px;border-radius:50%;background:{{ step2Bg }};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.4s ease">
+              <sc-if value="{{ step2Check }}" hint-placeholder-val="{{ false }}">
+                <svg width="13" height="10" viewBox="0 0 13 10" fill="none"><path d="M1 5L5 9 12 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </sc-if>
+              <sc-if value="{{ step2Spin }}" hint-placeholder-val="{{ false }}">
+                <div style="width:14px;height:14px;border-radius:50%;border:2.5px solid rgba(255,255,255,0.28);border-top-color:#fff;animation:spin 0.7s linear infinite"></div>
+              </sc-if>
+            </div>
+            <div style="flex:1">
+              <div style="font:500 14px 'Inter';color:#1C1C1E">Sell-Through Rate</div>
+              <div style="font:400 12px 'Inter';color:#8E8E93">Calculating sold vs active ratio</div>
+            </div>
+            <sc-if value="{{ step2Check }}" hint-placeholder-val="{{ false }}">
+              <span style="font:600 12px 'Inter';color:#34C759">✓ Done</span>
+            </sc-if>
+          </div>
+
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ╔══════════════════════════════════╗
+         ║         RESULTS SCREEN          ║
+         ╚══════════════════════════════════╝ -->
+    <sc-if value="{{ isResultsScreen }}" hint-placeholder-val="{{ false }}">
+      <div style="height:100%;display:flex;flex-direction:column;background:#F2F2F7;overflow:hidden;position:relative">
+
+        <!-- Toast notification -->
+        <sc-if value="{{ showToast }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;bottom:110px;left:50%;z-index:99;background:#1C1C1E;color:#fff;font:600 13px 'Inter';padding:10px 18px;border-radius:22px;white-space:nowrap;animation:toastIn 0.25s ease;display:flex;align-items:center;gap:7px;transform:translateX(-50%)">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" fill="#34C759"/><path d="M4 7l2.5 2.5L10 4.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            {{ toastMsg }}
+          </div>
+        </sc-if>
+
+        <!-- Header -->
+        <div style="background:#F2F2F7;padding:54px 16px 12px;display:flex;align-items:center;gap:10px;border-bottom:0.5px solid rgba(0,0,0,0.08)">
+          <button onClick="{{ goBack }}" style="width:34px;height:34px;border-radius:50%;background:#fff;border:none;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.1)" style-active="background:#E8E8ED">
+            <svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5L2 7.5l5.5 6" stroke="#1C1C1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div style="font:700 17px 'Inter';color:#1C1C1E;flex:1;letter-spacing:-0.3px">FlipScan</div>
+          <button onClick="{{ saveItem }}" style="width:34px;height:34px;border-radius:50%;background:#fff;border:none;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.1)" style-active="background:#E8E8ED">
+            <svg width="14" height="17" viewBox="0 0 14 17" fill="none"><path d="M2 1h10a1 1 0 011 1v13l-6-3.5L1 15V2a1 1 0 011-1z" stroke="#1C1C1E" stroke-width="1.7" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+
+        <!-- Scrollable content -->
+        <div style="flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch">
+
+          <!-- Item card -->
+          <div style="background:#fff;border-radius:16px;padding:14px;display:flex;gap:12px;align-items:flex-start;box-shadow:0 1px 4px rgba(0,0,0,0.05)">
+            <div style="width:68px;height:68px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:30px;background:{{ itemBg }}">{{ itemEmoji }}</div>
+            <div style="flex:1;min-width:0;padding-top:1px">
+              <div style="font:700 14px 'Inter';color:#1C1C1E;line-height:1.35;margin-bottom:3px">{{ itemName }}</div>
+              <div style="font:400 12px 'Inter';color:#8E8E93;margin-bottom:8px">{{ itemCategory }}</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <div style="background:#E8F5E9;border-radius:20px;padding:3px 9px">
+                  <span style="font:600 11px 'Inter';color:#2E7D32">{{ itemConfidence }}% match</span>
+                </div>
+                <div style="border-radius:20px;padding:3px 9px;background:{{ trendBg }}">
+                  <span style="font:600 11px 'Inter';color:{{ trendColor }}">{{ trendLabel }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Price grid -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+
+            <!-- Active Listings -->
+            <div style="background:#fff;border-radius:16px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,0.05)">
+              <div style="display:flex;align-items:center;gap:5px;margin-bottom:10px">
+                <div style="width:6px;height:6px;border-radius:50%;background:#FF9500;flex-shrink:0"></div>
+                <span style="font:600 10px 'Inter';color:#8E8E93;text-transform:uppercase;letter-spacing:0.5px">Active</span>
+              </div>
+              <div style="font:800 21px 'Inter';color:#1C1C1E;letter-spacing:-0.6px;line-height:1">{{ listedAvg }}</div>
+              <div style="font:400 11px 'Inter';color:#8E8E93;margin:2px 0 10px">avg listed</div>
+              <div style="height:1px;background:#F2F2F7;margin-bottom:10px"></div>
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <span style="font:400 11px 'Inter';color:#8E8E93">Low</span>
+                  <span style="font:600 12px 'Inter';color:#1C1C1E">{{ listedLow }}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <span style="font:400 11px 'Inter';color:#8E8E93">High</span>
+                  <span style="font:600 12px 'Inter';color:#1C1C1E">{{ listedHigh }}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <span style="font:400 11px 'Inter';color:#8E8E93">Count</span>
+                  <span style="font:500 11px 'Inter';color:#8E8E93">{{ listedCount }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sold -->
+            <div style="background:#fff;border-radius:16px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,0.05)">
+              <div style="display:flex;align-items:center;gap:5px;margin-bottom:10px">
+                <div style="width:6px;height:6px;border-radius:50%;background:#34C759;flex-shrink:0"></div>
+                <span style="font:600 10px 'Inter';color:#8E8E93;text-transform:uppercase;letter-spacing:0.5px">Sold · 90d</span>
+              </div>
+              <div style="font:800 21px 'Inter';color:#1C1C1E;letter-spacing:-0.6px;line-height:1">{{ soldAvg }}</div>
+              <div style="font:400 11px 'Inter';color:#8E8E93;margin:2px 0 10px">avg sold</div>
+              <div style="height:1px;background:#F2F2F7;margin-bottom:10px"></div>
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <span style="font:400 11px 'Inter';color:#8E8E93">Low</span>
+                  <span style="font:600 12px 'Inter';color:#1C1C1E">{{ soldLow }}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <span style="font:400 11px 'Inter';color:#8E8E93">High</span>
+                  <span style="font:600 12px 'Inter';color:#1C1C1E">{{ soldHigh }}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <span style="font:400 11px 'Inter';color:#8E8E93">Count</span>
+                  <span style="font:500 11px 'Inter';color:#8E8E93">{{ soldCount }}</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Sell-through rate -->
+          <div style="background:#fff;border-radius:16px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.05)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+              <div>
+                <div style="font:600 10px 'Inter';color:#8E8E93;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px">Sell-Through Rate</div>
+                <div style="display:flex;align-items:baseline;gap:7px">
+                  <div style="font:900 40px 'Inter';color:{{ sellThruColor }};line-height:1;letter-spacing:-1.5px">{{ sellThruPct }}</div>
+                  <div style="font:400 12px 'Inter';color:#8E8E93">in 90 days</div>
+                </div>
+              </div>
+              <div style="border-radius:20px;padding:6px 13px;background:{{ sellThruBg }}">
+                <span style="font:700 12px 'Inter';color:{{ sellThruColor }}">{{ sellThruLabel }}</span>
+              </div>
+            </div>
+
+            <!-- Bar -->
+            <div style="height:7px;border-radius:4px;overflow:hidden;margin-bottom:7px;position:relative;background:#F2F2F7">
+              <div style="position:absolute;left:0;top:0;bottom:0;width:40%;background:linear-gradient(90deg,rgba(255,59,48,0.18),rgba(255,59,48,0.1))"></div>
+              <div style="position:absolute;left:40%;top:0;bottom:0;width:30%;background:linear-gradient(90deg,rgba(255,149,0,0.14),rgba(255,149,0,0.1))"></div>
+              <div style="position:absolute;left:70%;top:0;bottom:0;right:0;background:linear-gradient(90deg,rgba(52,199,89,0.14),rgba(52,199,89,0.1))"></div>
+              <div style="position:absolute;left:0;top:0;bottom:0;width:{{ sellThruWidth }};background:{{ sellThruColor }};border-radius:4px;transition:width 1.2s cubic-bezier(0.34,1.56,0.64,1)"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between">
+              <span style="font:500 10px 'Inter';color:#FF3B30">Slow &lt;40%</span>
+              <span style="font:500 10px 'Inter';color:#FF9500">Moderate</span>
+              <span style="font:500 10px 'Inter';color:#34C759">Hot &gt;70%</span>
+            </div>
+          </div>
+
+          <!-- Flip Analysis -->
+          <div style="border-radius:16px;padding:18px;overflow:hidden;position:relative;background:#007AFF;box-shadow:0 6px 20px rgba(0,122,255,0.28)">
+            <div style="position:absolute;top:-24px;right:-24px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.07);pointer-events:none"></div>
+            <div style="position:absolute;bottom:-32px;left:20px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.04);pointer-events:none"></div>
+            <div style="position:relative">
+              <div style="font:700 15px 'Inter';color:#fff;margin-bottom:2px">Flip Analysis</div>
+              <div style="font:400 12px 'Inter';color:rgba(255,255,255,0.6);margin-bottom:16px">Based on 90-day eBay sold data</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+                <div style="background:rgba(255,255,255,0.14);border-radius:12px;padding:11px 8px;text-align:center">
+                  <div style="font:400 10px 'Inter';color:rgba(255,255,255,0.6);margin-bottom:5px;letter-spacing:0.2px">Buy Below</div>
+                  <div style="font:800 19px 'Inter';color:#fff;letter-spacing:-0.5px">{{ buyBelow }}</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.14);border-radius:12px;padding:11px 8px;text-align:center">
+                  <div style="font:400 10px 'Inter';color:rgba(255,255,255,0.6);margin-bottom:5px;letter-spacing:0.2px">List At</div>
+                  <div style="font:700 13px 'Inter';color:#fff;letter-spacing:-0.3px;line-height:1.2">{{ listAt }}</div>
+                </div>
+                <div style="background:rgba(52,199,89,0.28);border-radius:12px;padding:11px 8px;text-align:center;border:1px solid rgba(52,199,89,0.35)">
+                  <div style="font:400 10px 'Inter';color:rgba(255,255,255,0.6);margin-bottom:5px;letter-spacing:0.2px">Est. Profit</div>
+                  <div style="font:700 12px 'Inter';color:#fff;letter-spacing:-0.3px;line-height:1.2">{{ estProfit }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action buttons -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-bottom:14px">
+            <button onClick="{{ saveItem }}" style="background:#fff;border:1.5px solid #007AFF;color:#007AFF;font:600 14px 'Inter';padding:15px;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:6px" style-active="background:#EEF4FF">
+              <svg width="13" height="15" viewBox="0 0 13 15" fill="none"><path d="M1 1h11a1 1 0 011 1v11.5l-6.5-3.7L1 13.5V2a1 1 0 011-1z" stroke="#007AFF" stroke-width="1.7" stroke-linejoin="round"/></svg>
+              Save Item
+            </button>
+            <button style="background:#007AFF;border:none;color:#fff;font:600 14px 'Inter';padding:15px;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:6px" style-active="background:#0051CC">
+              <svg width="16" height="14" viewBox="0 0 16 14" fill="none"><path d="M1 1h14l-1.5 8.5H2.5L1 1z" stroke="white" stroke-width="1.7" stroke-linejoin="round"/><circle cx="5.5" cy="12.5" r="1.5" fill="white"/><circle cx="11.5" cy="12.5" r="1.5" fill="white"/></svg>
+              List on eBay
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </sc-if>
+
+  </x-import>
+
+  <!-- Bottom label -->
+  <div style="font:400 11px 'Inter';color:rgba(255,255,255,0.18);letter-spacing:0.3px;text-align:center">Prototype · Demo data only · Not connected to eBay API</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: { &quot;width&quot;: 420, &quot;height&quot;: 920 }
+}">
+class Component extends DCLogic {
+  state = {
+    screen: 'camera',
+    capturedImageUrl: null,
+    item: null,
+    analysisStep: 0,
+    demoIndex: 0,
+    isDark: true,
+    showToast: false,
+    toastMsg: '',
+  };
+
+  ITEMS = [
+    {
+      name: 'Polaroid OneStep 2 Instant Camera',
+      category: 'Cameras & Photo',
+      confidence: 94,
+      emoji: '📷',
+      bg: 'linear-gradient(135deg,#160033,#2d1b5e)',
+      listed: { count: 47, low: 45, high: 129, avg: 78 },
+      sold:   { count: 312, low: 35, high: 115, avg: 68 },
+      sellThru: 87,
+      trending: 'up',
+      buyBelow: 25, listLow: 65, listHigh: 85,
+    },
+    {
+      name: 'Nintendo Switch Lite Console',
+      category: 'Video Games & Consoles',
+      confidence: 98,
+      emoji: '🎮',
+      bg: 'linear-gradient(135deg,#6b0000,#b00)',
+      listed: { count: 234, low: 110, high: 175, avg: 142 },
+      sold:   { count: 1840, low: 95, high: 165, avg: 128 },
+      sellThru: 71,
+      trending: 'stable',
+      buyBelow: 80, listLow: 120, listHigh: 140,
+    },
+    {
+      name: 'Coach Madison Leather Tote Bag',
+      category: "Women's Bags & Handbags",
+      confidence: 88,
+      emoji: '👜',
+      bg: 'linear-gradient(135deg,#3d1a00,#6b3010)',
+      listed: { count: 89, low: 55, high: 245, avg: 118 },
+      sold:   { count: 523, low: 40, high: 210, avg: 95 },
+      sellThru: 85,
+      trending: 'up',
+      buyBelow: 40, listLow: 85, listHigh: 110,
+    },
+    {
+      name: 'Vintage Pyrex Mixing Bowl Set (3-pc)',
+      category: 'Pottery, Porcelain & Glass',
+      confidence: 91,
+      emoji: '🏺',
+      bg: 'linear-gradient(135deg,#0d2b1a,#1b4332)',
+      listed: { count: 156, low: 25, high: 89, avg: 48 },
+      sold:   { count: 487, low: 18, high: 76, avg: 42 },
+      sellThru: 76,
+      trending: 'up',
+      buyBelow: 15, listLow: 38, listHigh: 55,
+    },
+    {
+      name: 'Craftsman 20V Cordless Drill Kit',
+      category: 'Power & Hand Tools',
+      confidence: 95,
+      emoji: '🔧',
+      bg: 'linear-gradient(135deg,#0d0d1a,#1a1a2e)',
+      listed: { count: 78, low: 28, high: 89, avg: 52 },
+      sold:   { count: 284, low: 22, high: 75, avg: 44 },
+      sellThru: 38,
+      trending: 'down',
+      buyBelow: 12, listLow: 35, listHigh: 50,
+    },
+  ];
+
+  _timers = [];
+
+  _clearTimers() {
+    this._timers.forEach(t => clearTimeout(t));
+    this._timers = [];
+  }
+
+  openCamera = () => {
+    const el = document.getElementById('fs-cam');
+    if (el) el.click();
+  };
+
+  openGallery = () => {
+    const el = document.getElementById('fs-gallery');
+    if (el) el.click();
+  };
+
+  handleCameraCapture = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    e.target.value = '';
+    this._beginAnalysis(url);
+  };
+
+  handleGalleryCapture = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    e.target.value = '';
+    this._beginAnalysis(url);
+  };
+
+  startDemo = () => {
+    this._beginAnalysis(null);
+  };
+
+  _beginAnalysis(imageUrl) {
+    const idx = this.state.demoIndex % this.ITEMS.length;
+    const item = this.ITEMS[idx];
+    this._clearTimers();
+    this.setState({
+      screen: 'analyzing',
+      capturedImageUrl: imageUrl,
+      item,
+      analysisStep: 0,
+      isDark: true,
+      demoIndex: this.state.demoIndex + 1,
+    });
+    this._timers.push(setTimeout(() => this.setState({ analysisStep: 1 }), 950));
+    this._timers.push(setTimeout(() => this.setState({ analysisStep: 2 }), 1900));
+    this._timers.push(setTimeout(() => this.setState({ analysisStep: 3 }), 2850));
+    this._timers.push(setTimeout(() => this.setState({ screen: 'results', isDark: false }), 3400));
+  }
+
+  goBack = () => {
+    this._clearTimers();
+    this.setState({ screen: 'camera', isDark: true, capturedImageUrl: null, item: null, analysisStep: 0 });
+  };
+
+  saveItem = () => {
+    const item = this.state.item;
+    if (!item) return;
+    const short = item.name.split(' ').slice(0, 3).join(' ');
+    this.setState({ showToast: true, toastMsg: short + ' saved!' });
+    this._timers.push(setTimeout(() => this.setState({ showToast: false }), 2600));
+  };
+
+  renderVals() {
+    const { screen, capturedImageUrl, item, analysisStep, isDark, showToast, toastMsg } = this.state;
+
+    const sg = (i) =>
+      analysisStep > i ? '#34C759' : analysisStep === i ? '#007AFF' : '#E5E5EA';
+
+    const stc = item
+      ? (item.sellThru >= 70 ? '#34C759' : item.sellThru >= 40 ? '#FF9500' : '#FF3B30')
+      : '#34C759';
+    const stLabel = item
+      ? (item.sellThru >= 70 ? '🔥 Hot Market' : item.sellThru >= 40 ? '⚡ Moderate' : '🐢 Slow Market')
+      : '';
+    const stBg = item
+      ? (item.sellThru >= 70 ? 'rgba(52,199,89,0.12)' : item.sellThru >= 40 ? 'rgba(255,149,0,0.12)' : 'rgba(255,59,48,0.12)')
+      : 'rgba(52,199,89,0.12)';
+
+    const tColor = item
+      ? (item.trending === 'up' ? '#34C759' : item.trending === 'down' ? '#FF3B30' : '#8E8E93')
+      : '#8E8E93';
+    const tBg = item
+      ? (item.trending === 'up' ? 'rgba(52,199,89,0.12)' : item.trending === 'down' ? 'rgba(255,59,48,0.12)' : 'rgba(142,142,147,0.12)')
+      : 'rgba(142,142,147,0.12)';
+    const tLabel = item
+      ? (item.trending === 'up' ? '↑ Trending Up' : item.trending === 'down' ? '↓ Trending Down' : '→ Stable')
+      : '';
+
+    return {
+      // screens
+      isCameraScreen:   screen === 'camera',
+      isAnalyzingScreen: screen === 'analyzing',
+      isResultsScreen:  screen === 'results',
+      isDark,
+
+      // actions
+      openCamera:          this.openCamera,
+      openGallery:         this.openGallery,
+      handleCameraCapture: this.handleCameraCapture,
+      handleGalleryCapture: this.handleGalleryCapture,
+      startDemo:           this.startDemo,
+      goBack:              this.goBack,
+      saveItem:            this.saveItem,
+
+      // image / placeholder
+      capturedBgStyle:  capturedImageUrl ? 'url(' + JSON.stringify(capturedImageUrl) + ')' : 'none',
+      hasCapturedImage: !!capturedImageUrl,
+      showPlaceholder:  !capturedImageUrl,
+
+      // item identity
+      itemName:       item ? item.name       : '',
+      itemCategory:   item ? item.category   : '',
+      itemConfidence: item ? item.confidence : 0,
+      itemEmoji:      item ? item.emoji      : '📦',
+      itemBg:         item ? item.bg         : 'linear-gradient(135deg,#1a1a2e,#2a2a4e)',
+
+      // analysis step indicators
+      step0Bg: sg(0), step0Spin: analysisStep === 0, step0Check: analysisStep > 0,
+      step1Bg: sg(1), step1Spin: analysisStep === 1, step1Check: analysisStep > 1,
+      step2Bg: sg(2), step2Spin: analysisStep === 2, step2Check: analysisStep > 2,
+
+      // listed prices
+      listedAvg:   item ? '$' + item.listed.avg   : '',
+      listedLow:   item ? '$' + item.listed.low   : '',
+      listedHigh:  item ? '$' + item.listed.high  : '',
+      listedCount: item ? item.listed.count + ' listings' : '',
+
+      // sold prices
+      soldAvg:   item ? '$' + item.sold.avg   : '',
+      soldLow:   item ? '$' + item.sold.low   : '',
+      soldHigh:  item ? '$' + item.sold.high  : '',
+      soldCount: item ? item.sold.count + ' sold' : '',
+
+      // sell-through
+      sellThruPct:   item ? item.sellThru + '%' : '',
+      sellThruWidth: item ? item.sellThru + '%' : '0%',
+      sellThruColor: stc,
+      sellThruLabel: stLabel,
+      sellThruBg:    stBg,
+
+      // trend
+      trendColor: tColor,
+      trendBg:    tBg,
+      trendLabel: tLabel,
+
+      // flip analysis
+      buyBelow:  item ? '$' + item.buyBelow : '',
+      listAt:    item ? '$' + item.listLow + '–' + item.listHigh : '',
+      estProfit: item ? '$' + (item.listLow - item.buyBelow) + '–' + (item.listHigh - item.buyBelow) : '',
+
+      // toast
+      showToast,
+      toastMsg: toastMsg || '',
+    };
+  }
+}
+</script>
+</body>
+</html>
