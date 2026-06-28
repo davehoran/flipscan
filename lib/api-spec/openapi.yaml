@@ -14,6 +14,8 @@ tags:
     description: Item scanning and pricing intelligence
   - name: saved
     description: Saved item history
+  - name: compliance
+    description: Platform compliance endpoints (eBay Marketplace Account Deletion)
 paths:
   /healthz:
     get:
@@ -154,6 +156,52 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Stats"
+  /ebay/account-deletion:
+    get:
+      operationId: ebayAccountDeletionChallenge
+      tags: [compliance]
+      summary: eBay account deletion challenge-response verification
+      description: >
+        eBay calls this endpoint with a challenge_code when a developer registers
+        the notification URL in the eBay Developer Portal. The server returns a
+        SHA-256 hash of challenge_code + EBAY_VERIFICATION_TOKEN + endpoint URL.
+      parameters:
+        - name: challenge_code
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Challenge response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EbayChallengeResponse"
+        "400":
+          description: Missing challenge_code
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      operationId: ebayAccountDeletionNotification
+      tags: [compliance]
+      summary: eBay MARKETPLACE_ACCOUNT_DELETION notification handler
+      description: >
+        Receives account deletion events from eBay. Logs the eBay userId for
+        audit purposes and responds 200. FlipScan stores data by Clerk user ID
+        only so no rows require deletion; this handler must be updated if eBay
+        user OAuth is ever added.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EbayDeletionNotification"
+      responses:
+        "200":
+          description: Acknowledged
 components:
   schemas:
     HealthStatus:
@@ -323,3 +371,24 @@ components:
         avgSellThrough:
           type: integer
           description: Average sell-through rate across saved items (0-100)
+    EbayChallengeResponse:
+      type: object
+      required: [challengeResponse]
+      properties:
+        challengeResponse:
+          type: string
+          description: SHA-256 hex digest of challenge_code + verificationToken + endpointUrl
+    EbayDeletionNotification:
+      type: object
+      description: eBay MARKETPLACE_ACCOUNT_DELETION event envelope
+      properties:
+        notification:
+          type: object
+          properties:
+            data:
+              type: object
+              properties:
+                userId:
+                  type: string
+                username:
+                  type: string

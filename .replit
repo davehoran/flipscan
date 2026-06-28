@@ -27,3 +27,5 @@ channel = "stable-25_05"
 
 [userenv.shared]
 EBAY_ENV = "sandbox"
+EBAY_VERIFICATION_TOKEN = "029aaf19cf5ba6570d27fb9d6a365a3f048fbb77dc56fb16646c4dafc274d39a"
+EBAY_NOTIFICATION_ENDPOINT_URL = "https://flipscan.replit.app/api/ebay/account-deletion"
