@@ -45,16 +45,70 @@ export function computeFlip(soldAvg: number): FlipAnalysis {
   return { buyBelow, listLow, listHigh, estProfit };
 }
 
+const EBAY_SCOPE = "https://api.ebay.com/oauth/api_scope";
+
+/** "production" (default) or "sandbox", controlled by the EBAY_ENV secret. */
+function ebayBaseUrl(): string {
+  return process.env.EBAY_ENV === "sandbox"
+    ? "https://api.sandbox.ebay.com"
+    : "https://api.ebay.com";
+}
+
+let cachedToken: { value: string; expiresAt: number } | null = null;
+
 /**
- * Returns an OAuth access token usable against the eBay Browse / Marketplace
- * Insights APIs. This is wired to the Replit eBay connector once the user has
- * authorized it. Until then it throws EbayNotConnectedError so callers can
+ * Returns an OAuth application access token (client credentials grant) usable
+ * against the eBay Browse API. Tokens are cached in memory until shortly before
+ * they expire. Requires EBAY_CLIENT_ID and EBAY_CLIENT_SECRET (the App ID and
+ * Cert ID from the eBay developer Production keyset). Throws
+ * EbayNotConnectedError when those credentials are missing so callers can
  * surface a clear "connect eBay" message.
- *
- * NOTE: replaced with the connector snippet after the user completes eBay OAuth.
  */
 export async function getEbayAccessToken(): Promise<string> {
-  throw new EbayNotConnectedError();
+  const clientId = process.env.EBAY_CLIENT_ID;
+  const clientSecret = process.env.EBAY_CLIENT_SECRET;
+  if (!clientId || !clientSecret) {
+    throw new EbayNotConnectedError();
+  }
+
+  if (cachedToken && cachedToken.expiresAt > Date.now() + 60_000) {
+    return cachedToken.value;
+  }
+
+  const basic = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
+  const body = new URLSearchParams({
+    grant_type: "client_credentials",
+    scope: EBAY_SCOPE,
+  });
+
+  const resp = await fetch(`${ebayBaseUrl()}/identity/v1/oauth2/token`, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${basic}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: body.toString(),
+  });
+
+  if (!resp.ok) {
+    const detail = await resp.text();
+    throw new Error(`eBay OAuth token error: ${resp.status} ${detail}`);
+  }
+
+  const data = (await resp.json()) as {
+    access_token?: string;
+    expires_in?: number;
+  };
+
+  if (!data.access_token) {
+    throw new Error("eBay OAuth response missing access_token");
+  }
+
+  cachedToken = {
+    value: data.access_token,
+    expiresAt: Date.now() + (data.expires_in ?? 7200) * 1000,
+  };
+  return cachedToken.value;
 }
 
 const EBAY_MARKETPLACE = "EBAY_US";
@@ -82,7 +136,7 @@ export async function getEbayPricing(searchTerm: string): Promise<EbayPricing> {
   const token = await getEbayAccessToken();
 
   const url = new URL(
-    "https://api.ebay.com/buy/browse/v1/item_summary/search",
+    `${ebayBaseUrl()}/buy/browse/v1/item_summary/search`,
   );
   url.searchParams.set("q", searchTerm);
   url.searchParams.set("limit", "100");
