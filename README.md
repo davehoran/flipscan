@@ -1,6 +1,6 @@
-# FlipScan
+# Scan Flip
 
-A mobile-first web app for eBay resellers. Point your phone camera at any item, and FlipScan identifies it with AI vision, pulls live eBay pricing intelligence, and tells you whether it's worth the flip — in seconds.
+A mobile-first web app for eBay resellers. Point your phone camera at any item, and Scan Flip identifies it with AI vision, pulls live eBay pricing intelligence, and tells you whether it's worth the flip — in seconds.
 
 ![FlipScan results screen showing Polaroid OneStep 2 with active/sold pricing and 87% sell-through rate](.github/preview.png)
 
@@ -279,7 +279,7 @@ pnpm run build
 
 ## eBay API Notes
 
-FlipScan uses eBay's **Browse API** with OAuth client credentials flow (app-level token, no user OAuth required). The token is cached in memory and automatically refreshed on 401/403.
+Scan Flip uses eBay's **Browse API** with OAuth client credentials flow (app-level token, no user OAuth required). The token is cached in memory and automatically refreshed on 401/403.
 
 - **Active listings** — `item_summary/search` with `buying_options=FIXED_PRICE`
 - **Sold comps** — `item_summary/search` with `filter=buyingOptions:{FIXED_PRICE},soldItems:true` (last 90 days)

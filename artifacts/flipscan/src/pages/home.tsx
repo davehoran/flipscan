@@ -22,7 +22,7 @@ export default function Home() {
           </svg>
         </div>
 
-        <h1 className="text-4xl font-black text-white tracking-[-1.5px] mb-3">FlipScan</h1>
+        <h1 className="text-4xl font-black text-white tracking-[-1.5px] mb-3">Scan Flip</h1>
         <p className="text-[#8E8E93] text-lg font-medium tracking-tight mb-10 max-w-[280px]">
           Instant eBay price intelligence from your phone camera.
         </p>

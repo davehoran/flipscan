@@ -145,7 +145,7 @@ export default function ScanFlow() {
         <div className="flex flex-col h-[100dvh] relative">
           <div className="pt-[56px] px-5 pb-[10px] flex justify-between items-center z-10">
             <div>
-              <div className="font-black text-2xl tracking-[-1px] text-white leading-none">FlipScan</div>
+              <div className="font-black text-2xl tracking-[-1px] text-white leading-none">Scan Flip</div>
               <div className="font-normal text-[11px] text-white/35 mt-1 tracking-[0.3px] leading-none">eBay Price Intelligence</div>
             </div>
             <div className="flex items-center gap-[6px] bg-[rgba(52,199,89,0.12)] border border-[rgba(52,199,89,0.25)] rounded-[20px] px-[11px] py-[5px]">
@@ -285,7 +285,7 @@ export default function ScanFlow() {
             <button onClick={() => { setScreen("camera"); setScanResult(null); setCapturedImageUrl(null); }} className="w-[34px] h-[34px] rounded-full bg-white border-none flex items-center justify-center shadow-[0_1px_4px_rgba(0,0,0,0.1)] active:bg-[#E8E8ED]">
               <svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5L2 7.5l5.5 6" stroke="#1C1C1E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </button>
-            <div className="font-bold text-[17px] text-[#1C1C1E] flex-1 tracking-[-0.3px] text-center">FlipScan</div>
+            <div className="font-bold text-[17px] text-[#1C1C1E] flex-1 tracking-[-0.3px] text-center">Scan Flip</div>
             <Link href="/saved" className="w-[34px] h-[34px] rounded-full bg-white border-none flex items-center justify-center shadow-[0_1px_4px_rgba(0,0,0,0.1)] active:bg-[#E8E8ED]">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
             </Link>

@@ -55,8 +55,8 @@ router.get("/ebay/account-deletion", (req, res) => {
  * eBay sends this POST when an eBay user requests deletion of their account.
  * The payload contains the eBay userId and username of the deleted account.
  *
- * FlipScan compliance note:
- *   FlipScan uses eBay's Browse API with CLIENT CREDENTIALS only (no user-level
+ * Scan Flip compliance note:
+ *   Scan Flip uses eBay's Browse API with CLIENT CREDENTIALS only (no user-level
  *   eBay OAuth).  The saved_items table is keyed by Clerk user ID, not eBay user
  *   ID.  There is therefore no eBay-user-keyed data to purge.  We log the event
  *   for audit purposes and respond 200 immediately as required.

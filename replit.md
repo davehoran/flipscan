@@ -1,6 +1,6 @@
-# [Project name]
+# Scan Flip
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Mobile-first web app for eBay resellers — point your phone camera at any item to get instant pricing intelligence, sell-through rate, and flip analysis.
 
 ## Run & Operate
 

@@ -190,7 +190,7 @@ paths:
       summary: eBay MARKETPLACE_ACCOUNT_DELETION notification handler
       description: >
         Receives account deletion events from eBay. Logs the eBay userId for
-        audit purposes and responds 200. FlipScan stores data by Clerk user ID
+        audit purposes and responds 200. Scan Flip stores data by Clerk user ID
         only so no rows require deletion; this handler must be updated if eBay
         user OAuth is ever added.
       requestBody:
