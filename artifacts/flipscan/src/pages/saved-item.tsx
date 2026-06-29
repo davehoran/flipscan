@@ -124,20 +124,33 @@ export default function SavedItemView() {
             <div className="font-bold text-[15px] text-white">Flip Analysis</div>
             <div className="font-normal text-[12px] text-white/60 mb-[16px]">Based on 90-day eBay sold data</div>
             
-            <div className="grid grid-cols-3 gap-[8px]">
-              <div className="bg-white/[0.14] rounded-[12px] py-[11px] px-[8px] text-center">
-                <div className="font-normal text-[10px] text-white/60 mb-[4px]">Buy Below</div>
-                <div className="font-extrabold text-[19px] text-white tracking-[-0.5px]">${scanResult.flip.buyBelow}</div>
-              </div>
-              <div className="bg-white/[0.14] rounded-[12px] py-[11px] px-[8px] text-center">
-                <div className="font-normal text-[10px] text-white/60 mb-[4px]">List At</div>
-                <div className="font-bold text-[13px] text-white">${scanResult.flip.listLow}–${scanResult.flip.listHigh}</div>
-              </div>
-              <div className="bg-[#34C759]/[0.28] border border-[#34C759]/[0.35] rounded-[12px] py-[11px] px-[8px] text-center flex flex-col justify-center">
-                <div className="font-normal text-[10px] text-white/80 mb-[2px]">Est. Profit</div>
-                <div className="font-bold text-[13px] text-white">+${scanResult.flip.estProfit}</div>
-              </div>
-            </div>
+            {(() => {
+              const midList = (scanResult.flip.listLow + scanResult.flip.listHigh) / 2;
+              const marginPct = midList > 0 ? Math.round((scanResult.flip.estProfit / midList) * 100) : 0;
+              const marginColor = marginPct <= 30 ? "#FF3B30" : marginPct <= 60 ? "#FF9500" : "#34C759";
+              const marginBg = marginPct <= 30 ? "rgba(255,59,48,0.28)" : marginPct <= 60 ? "rgba(255,149,0,0.28)" : "rgba(52,199,89,0.28)";
+              const marginBorder = marginPct <= 30 ? "rgba(255,59,48,0.35)" : marginPct <= 60 ? "rgba(255,149,0,0.35)" : "rgba(52,199,89,0.35)";
+              return (
+                <div className="grid grid-cols-2 gap-[8px]">
+                  <div className="bg-white/[0.14] rounded-[12px] py-[11px] px-[8px] text-center">
+                    <div className="font-normal text-[10px] text-white/60 mb-[4px]">Buy Below</div>
+                    <div className="font-extrabold text-[19px] text-white tracking-[-0.5px]">${scanResult.flip.buyBelow}</div>
+                  </div>
+                  <div className="bg-white/[0.14] rounded-[12px] py-[11px] px-[8px] text-center">
+                    <div className="font-normal text-[10px] text-white/60 mb-[4px]">List At</div>
+                    <div className="font-bold text-[13px] text-white">${scanResult.flip.listLow}–${scanResult.flip.listHigh}</div>
+                  </div>
+                  <div className="bg-[#34C759]/[0.28] border border-[#34C759]/[0.35] rounded-[12px] py-[11px] px-[8px] text-center flex flex-col justify-center">
+                    <div className="font-normal text-[10px] text-white/80 mb-[2px]">Est. Profit</div>
+                    <div className="font-bold text-[13px] text-white">+${scanResult.flip.estProfit}</div>
+                  </div>
+                  <div className="rounded-[12px] py-[11px] px-[8px] text-center flex flex-col justify-center border" style={{ background: marginBg, borderColor: marginBorder }}>
+                    <div className="font-normal text-[10px] text-white/80 mb-[2px]">Est. Margin</div>
+                    <div className="font-bold text-[13px]" style={{ color: marginColor }}>{marginPct}%</div>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </div>
 
