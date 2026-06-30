@@ -406,11 +406,11 @@ export default function ScanFlow() {
                       </div>
                       <div className="bg-[#34C759]/[0.28] border border-[#34C759]/[0.35] rounded-[12px] py-[11px] px-[8px] text-center flex flex-col justify-center">
                         <div className="font-normal text-[10px] text-white/80 mb-[2px]">Est. Profit</div>
-                        <div className="font-bold text-[13px] text-white">+${scanResult.flip.estProfit}</div>
+                        <div className="font-extrabold text-[19px] text-white tracking-[-0.5px]">+${scanResult.flip.estProfit}</div>
                       </div>
                       <div className="rounded-[12px] py-[11px] px-[8px] text-center flex flex-col justify-center" style={{ background: marginColor }}>
                         <div className="font-normal text-[10px] text-white/80 mb-[2px]">Est. Margin</div>
-                        <div className="font-bold text-[13px] text-white">{marginPct}%</div>
+                        <div className="font-extrabold text-[19px] text-white tracking-[-0.5px]">{marginPct}%</div>
                       </div>
                     </div>
                   );
