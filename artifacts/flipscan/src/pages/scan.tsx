@@ -397,19 +397,19 @@ export default function ScanFlow() {
                   return (
                     <div className="grid grid-cols-2 gap-[8px]">
                       <div className="bg-white/[0.14] rounded-[12px] py-[11px] px-[8px] text-center">
-                        <div className="font-normal text-[10px] text-white/60 mb-[4px]">Buy Below</div>
+                        <div className="font-semibold text-[11px] text-white/60 mb-[4px]">Buy Below</div>
                         <div className="font-extrabold text-[19px] text-white tracking-[-0.5px]">${scanResult.flip.buyBelow}</div>
                       </div>
                       <div className="bg-white/[0.14] rounded-[12px] py-[11px] px-[8px] text-center">
-                        <div className="font-normal text-[10px] text-white/60 mb-[4px]">List At</div>
+                        <div className="font-semibold text-[11px] text-white/60 mb-[4px]">List At</div>
                         <div className="font-extrabold text-[19px] text-white tracking-[-0.5px]">${scanResult.flip.listLow}–${scanResult.flip.listHigh}</div>
                       </div>
                       <div className="bg-[#34C759]/[0.28] border border-[#34C759]/[0.35] rounded-[12px] py-[11px] px-[8px] text-center flex flex-col justify-center">
-                        <div className="font-normal text-[10px] text-white/80 mb-[2px]">Est. Profit</div>
+                        <div className="font-semibold text-[11px] text-white/80 mb-[2px]">Est. Profit</div>
                         <div className="font-extrabold text-[19px] text-white tracking-[-0.5px]">+${scanResult.flip.estProfit}</div>
                       </div>
                       <div className="rounded-[12px] py-[11px] px-[8px] text-center flex flex-col justify-center" style={{ background: marginColor }}>
-                        <div className="font-normal text-[10px] text-white/80 mb-[2px]">Est. Margin</div>
+                        <div className="font-semibold text-[11px] text-white/80 mb-[2px]">Est. Margin</div>
                         <div className="font-extrabold text-[19px] text-white tracking-[-0.5px]">{marginPct}%</div>
                       </div>
                     </div>
