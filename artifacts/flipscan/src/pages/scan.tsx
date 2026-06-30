@@ -408,9 +408,9 @@ export default function ScanFlow() {
                         <div className="font-normal text-[10px] text-white/80 mb-[2px]">Est. Profit</div>
                         <div className="font-bold text-[13px] text-white">+${scanResult.flip.estProfit}</div>
                       </div>
-                      <div className="rounded-[12px] py-[11px] px-[8px] text-center flex flex-col justify-center border" style={{ background: marginBg, borderColor: marginBorder }}>
+                      <div className="rounded-[12px] py-[11px] px-[8px] text-center flex flex-col justify-center" style={{ background: marginColor }}>
                         <div className="font-normal text-[10px] text-white/80 mb-[2px]">Est. Margin</div>
-                        <div className="font-bold text-[13px]" style={{ color: marginColor }}>{marginPct}%</div>
+                        <div className="font-bold text-[13px] text-white">{marginPct}%</div>
                       </div>
                     </div>
                   );
