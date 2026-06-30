@@ -25,7 +25,7 @@ export default function SavedItemView() {
 
   return (
     <div className="flex flex-col h-[100dvh] bg-[#F2F2F7] relative text-[#1C1C1E]">
-      <div className="bg-[#F2F2F7] pt-[54px] px-[16px] pb-[12px] flex items-center gap-[10px] border-b-[0.5px] border-black/[0.08] sticky top-0 z-20">
+      <div className="bg-[#F2F2F7] pt-[12px] px-[16px] pb-[12px] flex items-center gap-[10px] border-b-[0.5px] border-black/[0.08] sticky top-0 z-20">
         <Link href="/saved" className="w-[34px] h-[34px] rounded-full bg-white border-none flex items-center justify-center shadow-[0_1px_4px_rgba(0,0,0,0.1)] active:bg-[#E8E8ED]">
           <svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5L2 7.5l5.5 6" stroke="#1C1C1E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
         </Link>
