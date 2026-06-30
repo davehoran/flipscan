@@ -61,12 +61,12 @@ export default function SavedItemView() {
               <span className="font-semibold text-[10px] text-[#8E8E93] uppercase tracking-[0.5px]">Active</span>
             </div>
             <div className="font-extrabold text-[21px] text-[#1C1C1E] tracking-[-0.6px] leading-[1]">${scanResult.active.avg}</div>
-            <div className="font-normal text-[11px] text-[#8E8E93] mt-[2px] mb-[10px]">avg listed</div>
+            <div className="font-semibold text-[13px] text-[#1C1C1E] mt-[2px] mb-[10px]">avg listed</div>
             <div className="h-[1px] bg-[#F2F2F7] mb-[10px]"></div>
             <div className="flex flex-col gap-[5px]">
-              <div className="flex justify-between items-center"><span className="font-normal text-[11px] text-[#8E8E93]">Low</span><span className="font-semibold text-[12px] text-[#1C1C1E]">${scanResult.active.low}</span></div>
-              <div className="flex justify-between items-center"><span className="font-normal text-[11px] text-[#8E8E93]">High</span><span className="font-semibold text-[12px] text-[#1C1C1E]">${scanResult.active.high}</span></div>
-              <div className="flex justify-between items-center"><span className="font-normal text-[11px] text-[#8E8E93]">Count</span><span className="font-medium text-[11px] text-[#8E8E93]">{scanResult.active.count}</span></div>
+              <div className="flex justify-between items-center"><span className="font-semibold text-[13px] text-[#1C1C1E]">Low</span><span className="font-semibold text-[12px] text-[#1C1C1E]">${scanResult.active.low}</span></div>
+              <div className="flex justify-between items-center"><span className="font-semibold text-[13px] text-[#1C1C1E]">High</span><span className="font-semibold text-[12px] text-[#1C1C1E]">${scanResult.active.high}</span></div>
+              <div className="flex justify-between items-center"><span className="font-semibold text-[13px] text-[#1C1C1E]">Count</span><span className="font-medium text-[11px] text-[#8E8E93]">{scanResult.active.count}</span></div>
             </div>
           </div>
 
@@ -77,12 +77,12 @@ export default function SavedItemView() {
               {scanResult.sold.isEstimated && <span className="font-semibold text-[9px] bg-black/5 px-1 rounded">EST.</span>}
             </div>
             <div className="font-extrabold text-[21px] text-[#1C1C1E] tracking-[-0.6px] leading-[1]">${scanResult.sold.avg}</div>
-            <div className="font-normal text-[11px] text-[#8E8E93] mt-[2px] mb-[10px]">avg sold</div>
+            <div className="font-semibold text-[13px] text-[#1C1C1E] mt-[2px] mb-[10px]">avg sold</div>
             <div className="h-[1px] bg-[#F2F2F7] mb-[10px]"></div>
             <div className="flex flex-col gap-[5px]">
-              <div className="flex justify-between items-center"><span className="font-normal text-[11px] text-[#8E8E93]">Low</span><span className="font-semibold text-[12px] text-[#1C1C1E]">${scanResult.sold.low}</span></div>
-              <div className="flex justify-between items-center"><span className="font-normal text-[11px] text-[#8E8E93]">High</span><span className="font-semibold text-[12px] text-[#1C1C1E]">${scanResult.sold.high}</span></div>
-              <div className="flex justify-between items-center"><span className="font-normal text-[11px] text-[#8E8E93]">Count</span><span className="font-medium text-[11px] text-[#8E8E93]">{scanResult.sold.count}</span></div>
+              <div className="flex justify-between items-center"><span className="font-semibold text-[13px] text-[#1C1C1E]">Low</span><span className="font-semibold text-[12px] text-[#1C1C1E]">${scanResult.sold.low}</span></div>
+              <div className="flex justify-between items-center"><span className="font-semibold text-[13px] text-[#1C1C1E]">High</span><span className="font-semibold text-[12px] text-[#1C1C1E]">${scanResult.sold.high}</span></div>
+              <div className="flex justify-between items-center"><span className="font-semibold text-[13px] text-[#1C1C1E]">Count</span><span className="font-medium text-[11px] text-[#8E8E93]">{scanResult.sold.count}</span></div>
             </div>
           </div>
         </div>
