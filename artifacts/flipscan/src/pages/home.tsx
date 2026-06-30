@@ -9,18 +9,9 @@ export default function Home() {
       </div>
       <div className="relative z-10 w-full max-w-sm mx-auto flex flex-col items-center text-center">
         {/* Brand Icon */}
-        <div className="w-20 h-20 mb-8 rounded-3xl bg-[#007AFF] shadow-[0_8px_32px_rgba(0,122,255,0.4)] flex items-center justify-center">
-          <svg width="40" height="40" viewBox="0 0 200 200" fill="none">
-            <path d="M50 70H60V60H50V70ZM140 60V70H150V60H140ZM150 130H140V140H150V130ZM60 140H50V130H60V140Z" fill="white"/>
-            <path d="M70 50H130V60H70V50Z" fill="white"/>
-            <path d="M70 140H130V150H70V140Z" fill="white"/>
-            <path d="M50 70H60V130H50V70Z" fill="white"/>
-            <path d="M140 70H150V130H140V70Z" fill="white"/>
-            <path d="M85 85L115 115M115 85L85 115" stroke="white" strokeWidth="12" strokeLinecap="round"/>
-          </svg>
-        </div>
+        <img src="/logo.png" alt="Scan Flip" className="w-24 h-24 mb-8 drop-shadow-[0_8px_24px_rgba(0,122,255,0.35)]" />
 
-        <h1 className="text-4xl font-black text-white tracking-[-1.5px] mb-3">FlipScan </h1>
+        <h1 className="text-4xl font-black text-white tracking-[-1.5px] mb-3">ScanFlip </h1>
         <p className="text-[#8E8E93] text-lg font-medium tracking-tight mb-10 max-w-[280px]">
           Instant eBay price intelligence from your phone camera.
         </p>
