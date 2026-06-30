@@ -3,12 +3,10 @@ import { Link } from "wouter";
 export default function Home() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[100dvh] px-6 relative overflow-hidden" style={{ background: "radial-gradient(ellipse at 30% 0%,#1a1040 0%,#0d0d1a 55%)" }}>
-      
       {/* Decorative background grid */}
       <div className="absolute inset-0 pointer-events-none opacity-20">
         <div className="absolute inset-0" style={{ backgroundImage: "linear-gradient(rgba(0,122,255,0.2) 1px,transparent 1px),linear-gradient(90deg,rgba(0,122,255,0.2) 1px,transparent 1px)", backgroundSize: "30px 30px" }}></div>
       </div>
-
       <div className="relative z-10 w-full max-w-sm mx-auto flex flex-col items-center text-center">
         {/* Brand Icon */}
         <div className="w-20 h-20 mb-8 rounded-3xl bg-[#007AFF] shadow-[0_8px_32px_rgba(0,122,255,0.4)] flex items-center justify-center">
@@ -22,7 +20,7 @@ export default function Home() {
           </svg>
         </div>
 
-        <h1 className="text-4xl font-black text-white tracking-[-1.5px] mb-3">Scan Flip</h1>
+        <h1 className="text-4xl font-black text-white tracking-[-1.5px] mb-3">FlipScan </h1>
         <p className="text-[#8E8E93] text-lg font-medium tracking-tight mb-10 max-w-[280px]">
           Instant eBay price intelligence from your phone camera.
         </p>
