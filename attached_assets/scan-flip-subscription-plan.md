@@ -60,14 +60,14 @@ Add a `subscriptions` table linked to the Clerk user ID, plus a `scan_usage` tab
 ```sql
 -- Subscription status per user
 CREATE TABLE subscriptions (
-  id                    SERIAL PRIMARY KEY,
-  user_id               TEXT NOT NULL UNIQUE,        -- Clerk user ID
-  stripe_customer_id    TEXT,
+  id                     SERIAL PRIMARY KEY,
+  user_id                TEXT NOT NULL UNIQUE,         -- Clerk user ID
+  stripe_customer_id     TEXT,
   stripe_subscription_id TEXT,
-  status                TEXT NOT NULL DEFAULT 'free', -- 'free' | 'active' | 'canceled' | 'past_due'
-  current_period_end    TIMESTAMPTZ,
-  created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at            TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  status                 TEXT NOT NULL DEFAULT 'free', -- 'free' | 'active' | 'canceled' | 'past_due'
+  current_period_end     TIMESTAMPTZ,
+  created_at             TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at             TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- Daily scan counter (for free tier enforcement)
@@ -91,6 +91,7 @@ CREATE TABLE scan_usage (
 | `POST` | `/api/billing/portal` | Create a Stripe Customer Portal session for managing/canceling |
 | `GET` | `/api/billing/status` | Return the current user's subscription status |
 | `POST` | `/api/webhooks/stripe` | Receive Stripe events (subscription created/updated/deleted) |
+| `POST` | `/api/referral/send` | Send a referral email from the logged-in user to a friend's address |
 
 #### Enforcement middleware on `POST /api/scan`
 
@@ -129,16 +130,32 @@ Check subscription status; if not active → return `403` with `{ error: "Pro fe
 | `STRIPE_WEBHOOK_SECRET` | Verify incoming webhook signatures |
 | `STRIPE_PRO_MONTHLY_PRICE_ID` | Monthly checkout session |
 | `STRIPE_PRO_ANNUAL_PRICE_ID` | Annual checkout session |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` | Transactional email for referral sends (or a service like Resend/SendGrid) |
 
 ---
 
 ### 4 — Frontend changes
 
-#### New `/upgrade` page
+#### New `/pricing` page *(public — no login required)*
+- Accessible via a **"Pricing"** link on the home screen (before login)
+- Shows the Free vs Pro tier comparison table and feature list
+- **"Get Started Free"** button → routes to `/sign-up`
+- **"Start Pro — $7.99/month"** button → routes to `/sign-up` then directly into checkout
+- Annual toggle showing $74.99/year savings
+- This page doubles as the marketing landing for the subscription, so it can be linked externally
+
+#### New `/upgrade` page *(logged-in users)*
 - Side-by-side Free vs Pro comparison card
 - **"Start Pro — $7.99/month"** button → calls `/api/billing/checkout` → redirects to Stripe Checkout
 - Annual toggle showing $74.99/year savings
 - After payment, Stripe redirects to `/upgrade?success=true` → shows confirmation → redirects to `/scan`
+
+#### New `/refer` page *(logged-in users)*
+- Simple form: **Friend's email address** input + optional personal message
+- On submit → calls `POST /api/referral/send`
+- Server sends an email from a Scan Flip address, addressed to the friend, with the logged-in user's name in the body: *"[Your name] thinks you'd love Scan Flip — try it free at scanflip.online"*
+- Success state shows a confirmation message; rate-limited to prevent abuse (max 10 referrals/day per user)
+- Link to `/refer` shown in the account/settings menu
 
 #### Scan limit banner (free users on scan screen)
 - Subtle counter below the scan button: *"3 of 5 free scans used today"*
@@ -150,6 +167,13 @@ Check subscription status; if not active → return `403` with `{ error: "Pro fe
 #### Account / settings menu
 - Show current plan status
 - **"Manage Subscription"** button → calls `/api/billing/portal` → redirects to Stripe Portal
+- **"Refer a Friend"** link → routes to `/refer`
+- **"Sign Out"** button → calls Clerk's `signOut()` and redirects to `/`
+
+#### Logout button placement
+- Shown in the account/settings menu (accessible from the scan screen header)
+- Uses Clerk's `useClerk().signOut()` — clears the session and returns the user to the home screen
+- No confirmation dialog needed (Clerk re-auth is quick)
 
 ---
 
@@ -173,10 +197,11 @@ stripe event received
 
 1. **Schema migration** — add `subscriptions` and `scan_usage` tables to production DB
 2. **Stripe setup** — create products, prices, portal config, webhook
-3. **Backend** — webhook handler + `/api/billing/*` routes + enforcement middleware
-4. **Frontend** — upgrade page, scan limit UI, save gate, account menu
-5. **Test** — end-to-end with Stripe test mode: free limit, upgrade flow, portal cancel, webhook events
-6. **Deploy & announce**
+3. **Email setup** — configure transactional email provider for referral sends
+4. **Backend** — webhook handler + `/api/billing/*` routes + `/api/referral/send` + enforcement middleware
+5. **Frontend** — pricing page, upgrade page, refer page, logout button, scan limit UI, save gate, account menu
+6. **Test** — end-to-end with Stripe test mode: free limit, upgrade flow, portal cancel, webhook events, referral email delivery
+7. **Deploy & announce**
 
 ---
 
@@ -185,3 +210,5 @@ stripe event received
 - Should `past_due` subscriptions retain full access during the grace period, or immediately restrict to free limits?
 - Should the annual plan be offered at launch or held for a v2?
 - Do you want a free trial (e.g., 7 days Pro free) to reduce signup friction?
+- Which email provider for referral sends — Resend, SendGrid, or another? (Affects which secret is needed)
+- Should referrals offer an incentive (e.g., referrer gets a free week of Pro when the friend signs up)?
