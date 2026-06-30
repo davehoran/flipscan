@@ -65,7 +65,7 @@ const clerkAppearance = {
     formFieldSuccessText: "text-[#34C759]",
     alertText: "text-[#FF3B30]",
     logoBox: "mx-auto mb-4",
-    socialButtonsBlockButton: "border-[#3a3a4c] bg-[#12121d] hover:bg-[#1c1c2e]",
+    socialButtonsBlockButton: "!border-[#4a4a60] !bg-[#252545] hover:!bg-[#2e2e52]",
     formButtonPrimary: "bg-[#007AFF] hover:bg-[#0051CC] text-white font-semibold shadow-lg",
     formFieldInput: "bg-[#1c1c2e] border-[#3a3a4c] text-white",
     dividerLine: "bg-[#3a3a4c]",
