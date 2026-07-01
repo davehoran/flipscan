@@ -52,6 +52,7 @@ router.post("/billing/checkout", requireAuth, async (req: Request, res: Response
     customer: customerId,
     mode: "subscription",
     line_items: [{ price: priceId, quantity: 1 }],
+    metadata: { clerk_user_id: req.userId! },
     subscription_data: {
       trial_period_days: sub.status === "free" ? 7 : undefined,
       metadata: { clerk_user_id: req.userId! },

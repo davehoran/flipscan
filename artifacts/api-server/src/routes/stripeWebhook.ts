@@ -42,20 +42,24 @@ async function handleEvent(event: Stripe.Event) {
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
-      const clerkUserId = session.metadata?.clerk_user_id;
-      if (!clerkUserId) break;
-
       const stripeSubId = session.subscription as string | null;
       let trialEnd: Date | null = null;
       let status: string = "active";
+      let clerkUserId = session.metadata?.clerk_user_id;
 
       if (stripeSubId) {
         const stripeSub = await stripe.subscriptions.retrieve(stripeSubId);
+        // Fall back to subscription metadata if session metadata is missing clerk_user_id
+        if (!clerkUserId) {
+          clerkUserId = stripeSub.metadata?.clerk_user_id;
+        }
         if (stripeSub.trial_end) {
           trialEnd = new Date(stripeSub.trial_end * 1000);
           status = "trialing";
         }
       }
+
+      if (!clerkUserId) break;
 
       await db
         .insert(subscriptionsTable)

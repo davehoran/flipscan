@@ -1,0 +1,37 @@
+ stripe listen --forward-to http://localhost:8080/api/webhooks/stripe
+> Ready! You are using Stripe API Version [2026-06-24.dahlia]. Your webhook signing secret is whsec_466fc3e229b39e39514e2dba92b9fa087ab52f110fc3f68d509464b048925b0e (^C to quit)
+2026-06-30 22:40:12   --> customer.created [evt_1ToE4OAGZBLetSuq3eIvOSgM]
+2026-06-30 22:40:12            [ERROR] Failed to POST: Post "http://localhost:8080/api/webhooks/stripe": dial tcp [::1]:8080: connect: connection refused
+
+2026-06-30 22:42:37   --> invoice.finalized [evt_1ToE6jAGZBLetSuqy1nXHQjx]
+2026-06-30 22:42:37            [ERROR] Failed to POST: Post "http://localhost:8080/api/webhooks/stripe": dial tcp [::1]:8080: connect: connection refused
+
+2026-06-30 22:42:37   --> invoice.paid [evt_1ToE6jAGZBLetSuq4gFRXvYD]
+2026-06-30 22:42:37            [ERROR] Failed to POST: Post "http://localhost:8080/api/webhooks/stripe": dial tcp [::1]:8080: connect: connection refused
+
+2026-06-30 22:42:37   --> payment_method.attached [evt_1ToE6jAGZBLetSuqjsaqaVGg]
+2026-06-30 22:42:37            [ERROR] Failed to POST: Post "http://localhost:8080/api/webhooks/stripe": dial tcp [::1]:8080: connect: connection refused
+
+2026-06-30 22:42:37   --> customer.updated [evt_1ToE6jAGZBLetSuq8WC3w3Ws]
+2026-06-30 22:42:37            [ERROR] Failed to POST: Post "http://localhost:8080/api/webhooks/stripe": dial tcp [::1]:8080: connect: connection refused
+
+2026-06-30 22:42:37   --> setup_intent.created [evt_1ToE6jAGZBLetSuqqIXLyaLw]
+2026-06-30 22:42:37            [ERROR] Failed to POST: Post "http://localhost:8080/api/webhooks/stripe": dial tcp [::1]:8080: connect: connection refused
+
+2026-06-30 22:42:37   --> customer.subscription.created [evt_1ToE6jAGZBLetSuqnQrYY5L7]
+2026-06-30 22:42:37            [ERROR] Failed to POST: Post "http://localhost:8080/api/webhooks/stripe": dial tcp [::1]:8080: connect: connection refused
+
+2026-06-30 22:42:37   --> setup_intent.succeeded [evt_1ToE6jAGZBLetSuqSplL25VF]
+2026-06-30 22:42:37            [ERROR] Failed to POST: Post "http://localhost:8080/api/webhooks/stripe": dial tcp [::1]:8080: connect: connection refused
+
+2026-06-30 22:42:38   --> invoice.created [evt_1ToE6jAGZBLetSuqKI4tPsvY]
+2026-06-30 22:42:38            [ERROR] Failed to POST: Post "http://localhost:8080/api/webhooks/stripe": dial tcp [::1]:8080: connect: connection refused
+
+2026-06-30 22:42:38   --> invoice.payment_succeeded [evt_1ToE6jAGZBLetSuqNj9IxXNf]
+2026-06-30 22:42:38            [ERROR] Failed to POST: Post "http://localhost:8080/api/webhooks/stripe": dial tcp [::1]:8080: connect: connection refused
+
+2026-06-30 22:42:38   --> checkout.session.completed [evt_1ToE6kAGZBLetSuqSxW3Em1G]
+2026-06-30 22:42:38            [ERROR] Failed to POST: Post "http://localhost:8080/api/webhooks/stripe": dial tcp [::1]:8080: connect: connection refused
+
+2026-06-30 22:42:49   --> invoice.upcoming [evt_1ToE6uAGZBLetSuqzwj2fk25]
+2026-06-30 22:42:49            [ERROR] Failed to POST: Post "http://localhost:8080/api/webhooks/stripe": dial tcp [::1]:8080: connect: connection refused
