@@ -51,10 +51,13 @@ export default function Home() {
 
         <div className="w-full flex flex-col gap-3">
           <Link href="/sign-up" className="w-full flex items-center justify-center py-[18px] rounded-[16px] bg-[#007AFF] text-white font-bold text-[17px] shadow-[0_4px_12px_rgba(0,122,255,0.3)] hover:bg-[#0051CC] transition-colors active:scale-[0.98]">
-            Get Started
+            Get Started Free
           </Link>
           <Link href="/sign-in" className="w-full flex items-center justify-center py-[18px] rounded-[16px] bg-transparent text-white font-semibold text-[17px] hover:bg-[rgba(255,255,255,0.05)] transition-colors active:scale-[0.98]">
             Sign In
+          </Link>
+          <Link href="/pricing" className="w-full flex items-center justify-center py-[12px] text-[#5BA3FF] font-medium text-[14px]">
+            See pricing →
           </Link>
         </div>
       </div>

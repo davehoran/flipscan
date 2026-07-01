@@ -9,6 +9,7 @@ import {
   getClerkProxyHost,
 } from "./middlewares/clerkProxyMiddleware";
 import router from "./routes";
+import stripeWebhookRouter from "./routes/stripeWebhook";
 import { logger } from "./lib/logger";
 
 const app: Express = express();
@@ -32,6 +33,9 @@ app.use(
     },
   }),
 );
+
+// Stripe webhook needs raw body — mount BEFORE express.json()
+app.use("/api/webhooks", express.raw({ type: "application/json" }), stripeWebhookRouter);
 
 app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
 

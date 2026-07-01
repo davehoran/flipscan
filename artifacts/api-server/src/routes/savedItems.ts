@@ -54,6 +54,14 @@ router.get("/stats", requireAuth, async (req, res): Promise<void> => {
 });
 
 router.post("/saved-items", requireAuth, async (req, res): Promise<void> => {
+  // Pro-only feature
+  const { getOrCreateSubscription, isProAccess } = await import("../lib/subscription");
+  const sub = await getOrCreateSubscription(req.userId!);
+  if (!isProAccess(sub.status)) {
+    res.status(403).json({ error: "Pro feature", upgradeUrl: "/upgrade" });
+    return;
+  }
+
   const parsed = CreateSavedItemBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });

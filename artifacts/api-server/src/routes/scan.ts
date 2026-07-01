@@ -1,16 +1,57 @@
 import { Router, type IRouter } from "express";
+import { eq, and, sql } from "drizzle-orm";
 import { AnalyzeItemBody, AnalyzeItemResponse } from "@workspace/api-zod";
+import { db, scanUsageTable } from "@workspace/db";
 import { requireAuth } from "../middlewares/requireAuth";
 import { identifyItem, UnidentifiableItemError } from "../lib/vision";
 import { getEbayPricing, EbayNotConnectedError } from "../lib/ebay";
+import { getOrCreateSubscription, isProAccess } from "../lib/subscription";
 
 const router: IRouter = Router();
+
+const FREE_DAILY_LIMIT = 5;
 
 router.post("/scan", requireAuth, async (req, res): Promise<void> => {
   const parsed = AnalyzeItemBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
     return;
+  }
+
+  // Subscription enforcement
+  const sub = await getOrCreateSubscription(req.userId!);
+  if (!isProAccess(sub.status)) {
+    // Check and enforce daily scan limit
+    const today = new Date().toISOString().slice(0, 10);
+    const [usage] = await db
+      .select()
+      .from(scanUsageTable)
+      .where(
+        and(
+          eq(scanUsageTable.userId, req.userId!),
+          eq(scanUsageTable.scanDate, today),
+        ),
+      );
+
+    const currentCount = usage?.count ?? 0;
+    if (currentCount >= FREE_DAILY_LIMIT) {
+      res.status(429).json({
+        error: "Daily scan limit reached",
+        scansUsed: currentCount,
+        scansLimit: FREE_DAILY_LIMIT,
+        upgradeUrl: "/upgrade",
+      });
+      return;
+    }
+
+    // Increment scan count
+    await db
+      .insert(scanUsageTable)
+      .values({ userId: req.userId!, scanDate: today, count: 1 })
+      .onConflictDoUpdate({
+        target: [scanUsageTable.userId, scanUsageTable.scanDate],
+        set: { count: sql`scan_usage.count + 1` },
+      });
   }
 
   let identification;

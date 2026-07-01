@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { useAnalyzeItem, useCreateSavedItem } from "@workspace/api-client-react";
 import { DEMO_ITEMS } from "@/lib/demo-data";
 import { ScanResult } from "@workspace/api-client-react/src/generated/api.schemas";
+import { useBilling } from "@/hooks/useBilling";
 
 // ... (Will add the full implementation here) ...
 // Splitting to another file to save space in the thought block, wait, I can just write it.
@@ -16,6 +17,11 @@ export default function ScanFlow() {
   const [scanResult, setScanResult] = useState<any>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
+  const [showSaveGate, setShowSaveGate] = useState(false);
+  const [scansUsed, setScansUsed] = useState<number | null>(null);
+  const [showLimitWall, setShowLimitWall] = useState(false);
+
+  const { billing, isProAccess } = useBilling();
 
   const analyzeMutation = useAnalyzeItem();
   const createSavedItem = useCreateSavedItem();
@@ -48,20 +54,29 @@ export default function ScanFlow() {
       if (step === 3) clearInterval(interval);
     }, 950);
 
+    const startTime = Date.now();
     analyzeMutation.mutate({ data: { image: imgData } }, {
       onSuccess: (data) => {
         setScanResult(data);
-        // Wait for animations to finish if they haven't yet
         setTimeout(() => {
           setScreen("results");
         }, Math.max(0, 3400 - (Date.now() - startTime)));
       },
-      onError: (err) => {
-        alert("Couldn't identify that item — try another angle");
-        setScreen("camera");
+      onError: (err: any) => {
+        const status = err?.response?.status ?? err?.status;
+        if (status === 429) {
+          const used = err?.response?.data?.scansUsed ?? 5;
+          setScansUsed(used);
+          setShowLimitWall(true);
+          setScreen("camera");
+        } else {
+          setToastMsg("Couldn't identify that item — try another angle");
+          setShowToast(true);
+          setTimeout(() => setShowToast(false), 2600);
+          setScreen("camera");
+        }
       }
     });
-    const startTime = Date.now();
   };
 
   const startDemo = () => {
@@ -104,6 +119,10 @@ export default function ScanFlow() {
 
   const saveItem = () => {
     if (!scanResult) return;
+    if (!isProAccess) {
+      setShowSaveGate(true);
+      return;
+    }
     createSavedItem.mutate({
       data: {
         name: scanResult.name,
@@ -122,6 +141,16 @@ export default function ScanFlow() {
         setToastMsg(`Saved ${scanResult.name}`);
         setShowToast(true);
         setTimeout(() => setShowToast(false), 2600);
+      },
+      onError: (err: any) => {
+        const status = err?.response?.status ?? err?.status;
+        if (status === 403) {
+          setShowSaveGate(true);
+        } else {
+          setToastMsg("Couldn't save — please try again");
+          setShowToast(true);
+          setTimeout(() => setShowToast(false), 2600);
+        }
       }
     });
   };
@@ -148,9 +177,14 @@ export default function ScanFlow() {
               <div className="font-black text-2xl tracking-[-1px] text-white leading-none">Scan Flip</div>
               <div className="font-normal text-[11px] text-white/35 mt-1 tracking-[0.3px] leading-none">eBay Price Intelligence</div>
             </div>
-            <div className="flex items-center gap-[6px] bg-[rgba(52,199,89,0.12)] border border-[rgba(52,199,89,0.25)] rounded-[20px] px-[11px] py-[5px]">
-              <div className="w-[7px] h-[7px] rounded-full bg-[#34C759] animate-[breathe_1.8s_ease-in-out_infinite]"></div>
-              <span className="font-medium text-[11px] text-[#34C759]">Live Data</span>
+            <div className="flex items-center gap-[8px]">
+              <div className="flex items-center gap-[6px] bg-[rgba(52,199,89,0.12)] border border-[rgba(52,199,89,0.25)] rounded-[20px] px-[11px] py-[5px]">
+                <div className="w-[7px] h-[7px] rounded-full bg-[#34C759] animate-[breathe_1.8s_ease-in-out_infinite]"></div>
+                <span className="font-medium text-[11px] text-[#34C759]">Live Data</span>
+              </div>
+              <Link href="/account" className="w-[32px] h-[32px] rounded-full bg-white/10 border border-white/15 flex items-center justify-center">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+              </Link>
             </div>
           </div>
 
@@ -182,6 +216,17 @@ export default function ScanFlow() {
           <div className="text-center px-5 pt-[10px] pb-[6px] font-normal text-[12px] text-white/30">
             Snap a photo or tap Demo to explore
           </div>
+
+          {/* Scan counter for free users */}
+          {!isProAccess && billing && (
+            <div className="text-center pb-[4px]">
+              <span className="text-[11px] font-medium text-white/40">
+                {scansUsed !== null ? scansUsed : "?"} of 5 free scans used today
+                {" · "}
+                <Link href="/upgrade" className="text-[#5BA3FF] underline-offset-2">Upgrade</Link>
+              </span>
+            </div>
+          )}
 
           <div className="flex items-center justify-between px-[44px] pt-[8px] pb-[30px]">
             <button onClick={() => galleryInputRef.current?.click()} className="w-[54px] h-[54px] rounded-[16px] bg-white/[0.08] border-[1.5px] border-white/[0.12] flex flex-col items-center justify-center gap-[4px] active:bg-white/[0.18] transition-colors">
@@ -431,6 +476,56 @@ export default function ScanFlow() {
             </div>
 
           </div>
+          </div>
+        </div>
+      )}
+
+      {/* SCAN LIMIT WALL */}
+      {showLimitWall && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-end">
+          <div className="w-full bg-[#1C1C1E] rounded-t-[28px] px-[24px] pt-[28px] pb-[40px] text-white text-center">
+            <div className="text-[44px] mb-[12px]">🚫</div>
+            <h2 className="font-black text-[22px] tracking-[-0.5px] mb-[8px]">Daily scan limit reached</h2>
+            <p className="text-[#AEAEB2] text-[14px] mb-[24px]">
+              You've used all 5 free scans today. Upgrade to Pro for unlimited scans.
+            </p>
+            <Link href="/upgrade">
+              <button className="w-full py-[16px] rounded-[14px] bg-[#007AFF] text-white font-bold text-[16px] mb-[12px]">
+                Start Free Trial — $7.99/mo after 7 days
+              </button>
+            </Link>
+            <button
+              onClick={() => setShowLimitWall(false)}
+              className="w-full py-[14px] text-[#AEAEB2] font-medium text-[15px]"
+            >
+              Maybe later
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* SAVE GATE BOTTOM SHEET */}
+      {showSaveGate && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-end" onClick={() => setShowSaveGate(false)}>
+          <div className="w-full bg-[#1C1C1E] rounded-t-[28px] px-[24px] pt-[28px] pb-[40px] text-white text-center" onClick={(e) => e.stopPropagation()}>
+            <div className="text-[44px] mb-[12px]">🔖</div>
+            <h2 className="font-black text-[22px] tracking-[-0.5px] mb-[8px]">Save items with Pro</h2>
+            <p className="text-[#AEAEB2] text-[14px] mb-[24px]">
+              {billing?.status === "free"
+                ? "Try Pro free for 7 days — no credit card required."
+                : "Resubscribe to save items and access your history."}
+            </p>
+            <Link href="/upgrade">
+              <button className="w-full py-[16px] rounded-[14px] bg-[#007AFF] text-white font-bold text-[16px] mb-[12px]">
+                {billing?.status === "free" ? "Start Free Trial" : "Resubscribe — $7.99/month"}
+              </button>
+            </Link>
+            <button
+              onClick={() => setShowSaveGate(false)}
+              className="w-full py-[14px] text-[#AEAEB2] font-medium text-[15px]"
+            >
+              Not now
+            </button>
           </div>
         </div>
       )}

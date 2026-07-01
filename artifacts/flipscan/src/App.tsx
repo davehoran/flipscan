@@ -10,6 +10,11 @@ import Home from "@/pages/home";
 import ScanFlow from "@/pages/scan";
 import SavedList from "@/pages/saved";
 import SavedItemView from "@/pages/saved-item";
+import PricingPage from "@/pages/pricing";
+import UpgradePage from "@/pages/upgrade";
+import ReferPage from "@/pages/refer";
+import AccountPage from "@/pages/account";
+import { useBilling } from "@/hooks/useBilling";
 
 const clerkPubKey = publishableKeyFromHost(
   window.location.hostname,
@@ -136,6 +141,18 @@ function ClerkQueryClientCacheInvalidator() {
   return null;
 }
 
+function PaymentWarningBanner() {
+  const { billing } = useBilling();
+  if (!billing?.paymentWarning) return null;
+  return (
+    <div className="fixed top-0 left-0 right-0 z-50 bg-[#FF3B30] text-white text-[13px] font-semibold px-[16px] py-[10px] text-center">
+      ⚠️ Payment issue — please{" "}
+      <a href="/account" className="underline">update your card</a>{" "}
+      to keep Pro access.
+    </div>
+  );
+}
+
 function ClerkProviderWithRoutes() {
   const [, setLocation] = useLocation();
 
@@ -156,7 +173,7 @@ function ClerkProviderWithRoutes() {
         signUp: {
           start: {
             title: "Create your account",
-            subtitle: "Get started today",
+            subtitle: "7 days free, then $7.99/month — cancel anytime",
           },
         },
       }}
@@ -165,13 +182,18 @@ function ClerkProviderWithRoutes() {
     >
       <QueryClientProvider client={queryClient}>
         <ClerkQueryClientCacheInvalidator />
+        <PaymentWarningBanner />
         <Switch>
           <Route path="/" component={HomeRedirect} />
           <Route path="/sign-in/*?" component={SignInPage} />
           <Route path="/sign-up/*?" component={SignUpPage} />
+          <Route path="/pricing" component={PricingPage} />
           <ProtectedRoute path="/scan" component={ScanFlow} />
           <ProtectedRoute path="/saved" component={SavedList} />
           <ProtectedRoute path="/saved/:id" component={SavedItemView} />
+          <ProtectedRoute path="/upgrade" component={UpgradePage} />
+          <ProtectedRoute path="/refer" component={ReferPage} />
+          <ProtectedRoute path="/account" component={AccountPage} />
           {/* Fallback to home */}
           <Route>
             <Redirect to="/" />
