@@ -20,7 +20,7 @@ export async function getOrCreateSubscription(userId: string) {
 
   // Fire welcome email asynchronously (don't block the request)
   try {
-    const user = await clerkClient().users.getUser(userId);
+    const user = await clerkClient.users.getUser(userId);
     const email = user.emailAddresses[0]?.emailAddress;
     const firstName = user.firstName ?? "there";
     if (email) {

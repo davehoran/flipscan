@@ -34,7 +34,7 @@ router.post("/billing/checkout", requireAuth, async (req: Request, res: Response
   let customerId = sub.stripeCustomerId ?? undefined;
   if (!customerId) {
     const { clerkClient } = await import("@clerk/express");
-    const user = await clerkClient().users.getUser(req.userId!);
+    const user = await clerkClient.users.getUser(req.userId!);
     const email = user.emailAddresses[0]?.emailAddress;
     const customer = await stripe.customers.create({
       email,

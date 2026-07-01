@@ -66,7 +66,7 @@ router.post("/referral/send", requireAuth, async (req: Request, res: Response): 
   // Look up the referrer's name for the email
   let senderName = "A friend";
   try {
-    const user = await clerkClient().users.getUser(req.userId!);
+    const user = await clerkClient.users.getUser(req.userId!);
     senderName = user.firstName ?? user.emailAddresses[0]?.emailAddress ?? "A friend";
   } catch {
     // Non-fatal
