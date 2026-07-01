@@ -8,7 +8,7 @@ const router: IRouter = Router();
 
 // Stripe requires the raw body to verify signatures — mount BEFORE express.json()
 router.post(
-  "/webhooks/stripe",
+  "/stripe",
   // express.raw is applied in app.ts for this route only
   async (req: Request, res: Response): Promise<void> => {
     const sig = req.headers["stripe-signature"];
