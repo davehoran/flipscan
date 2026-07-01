@@ -73,8 +73,6 @@ export default function PricingPage() {
                   )}
                   <span className="text-[14px] text-[#AEAEB2]">
                     {typeof f.free === "string" ? f.free : f.label}
-                    {typeof f.free === "boolean" && !f.free && ` — ${f.label}`}
-                    {typeof f.free === "boolean" && f.free && ` — ${f.label}`}
                   </span>
                 </div>
               ))}
